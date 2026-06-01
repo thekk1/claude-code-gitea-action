@@ -1,5 +1,15 @@
 name: Claude Assistant for Gitea
 
+# Use the PR/issue title as the run name in the Actions list,
+# instead of the default (head commit message of the base branch).
+# Falls back to the workflow name if no PR/issue context exists.
+run-name: >-
+  ${{
+    github.event.pull_request.title
+    || github.event.issue.title
+    || github.workflow
+  }}
+
 on:
   # Trigger on issue comments (works on both issues and pull requests in Gitea)
   issue_comment:
