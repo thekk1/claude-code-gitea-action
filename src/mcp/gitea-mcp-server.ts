@@ -12,12 +12,12 @@ const BRANCH_NAME = process.env.BRANCH_NAME;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITEA_API_URL = process.env.GITEA_API_URL || "https://api.github.com";
 
-console.log(`[GITEA-MCP] Starting Gitea API Operations MCP Server`);
-console.log(`[GITEA-MCP] REPO_OWNER: ${REPO_OWNER}`);
-console.log(`[GITEA-MCP] REPO_NAME: ${REPO_NAME}`);
-console.log(`[GITEA-MCP] BRANCH_NAME: ${BRANCH_NAME}`);
-console.log(`[GITEA-MCP] GITEA_API_URL: ${GITEA_API_URL}`);
-console.log(`[GITEA-MCP] GITHUB_TOKEN: ${GITHUB_TOKEN ? "***" : "undefined"}`);
+console.error(`[GITEA-MCP] Starting Gitea API Operations MCP Server`);
+console.error(`[GITEA-MCP] REPO_OWNER: ${REPO_OWNER}`);
+console.error(`[GITEA-MCP] REPO_NAME: ${REPO_NAME}`);
+console.error(`[GITEA-MCP] BRANCH_NAME: ${BRANCH_NAME}`);
+console.error(`[GITEA-MCP] GITEA_API_URL: ${GITEA_API_URL}`);
+console.error(`[GITEA-MCP] GITHUB_TOKEN: ${GITHUB_TOKEN ? "***" : "undefined"}`);
 
 if (!REPO_OWNER || !REPO_NAME || !GITHUB_TOKEN) {
   console.error(
@@ -38,7 +38,7 @@ async function giteaRequest(
   body?: any,
 ): Promise<any> {
   const url = `${GITEA_API_URL}${endpoint}`;
-  console.log(`[GITEA-MCP] Making ${method} request to: ${url}`);
+  console.error(`[GITEA-MCP] Making ${method} request to: ${url}`);
 
   const headers: Record<string, string> = {
     Authorization: `token ${GITHUB_TOKEN}`,
@@ -56,8 +56,8 @@ async function giteaRequest(
   });
 
   const responseText = await response.text();
-  console.log(`[GITEA-MCP] Response status: ${response.status}`);
-  console.log(`[GITEA-MCP] Response: ${responseText.substring(0, 500)}...`);
+  console.error(`[GITEA-MCP] Response status: ${response.status}`);
+  console.error(`[GITEA-MCP] Response: ${responseText.substring(0, 500)}...`);
 
   if (!response.ok) {
     throw new Error(
@@ -1262,18 +1262,18 @@ server.tool(
 );
 
 async function runServer() {
-  console.log(`[GITEA-MCP] Starting MCP server transport...`);
+  console.error(`[GITEA-MCP] Starting MCP server transport...`);
   const transport = new StdioServerTransport();
-  console.log(`[GITEA-MCP] Connecting to transport...`);
+  console.error(`[GITEA-MCP] Connecting to transport...`);
   await server.connect(transport);
-  console.log(`[GITEA-MCP] Gitea MCP server connected and ready!`);
+  console.error(`[GITEA-MCP] Gitea MCP server connected and ready!`);
   process.on("exit", () => {
-    console.log(`[GITEA-MCP] Server shutting down...`);
+    console.error(`[GITEA-MCP] Server shutting down...`);
     server.close();
   });
 }
 
-console.log(`[GITEA-MCP] Calling runServer()...`);
+console.error(`[GITEA-MCP] Calling runServer()...`);
 runServer().catch((error) => {
   console.error(`[GITEA-MCP] Server startup failed:`, error);
   process.exit(1);

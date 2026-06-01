@@ -13,13 +13,13 @@ const REPO_DIR = process.env.REPO_DIR || process.cwd();
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITEA_API_URL = process.env.GITEA_API_URL || "https://api.github.com";
 
-console.log(`[LOCAL-GIT-MCP] Starting Local Git Operations MCP Server`);
-console.log(`[LOCAL-GIT-MCP] REPO_OWNER: ${REPO_OWNER}`);
-console.log(`[LOCAL-GIT-MCP] REPO_NAME: ${REPO_NAME}`);
-console.log(`[LOCAL-GIT-MCP] BRANCH_NAME: ${BRANCH_NAME}`);
-console.log(`[LOCAL-GIT-MCP] REPO_DIR: ${REPO_DIR}`);
-console.log(`[LOCAL-GIT-MCP] GITEA_API_URL: ${GITEA_API_URL}`);
-console.log(
+console.error(`[LOCAL-GIT-MCP] Starting Local Git Operations MCP Server`);
+console.error(`[LOCAL-GIT-MCP] REPO_OWNER: ${REPO_OWNER}`);
+console.error(`[LOCAL-GIT-MCP] REPO_NAME: ${REPO_NAME}`);
+console.error(`[LOCAL-GIT-MCP] BRANCH_NAME: ${BRANCH_NAME}`);
+console.error(`[LOCAL-GIT-MCP] REPO_DIR: ${REPO_DIR}`);
+console.error(`[LOCAL-GIT-MCP] GITEA_API_URL: ${GITEA_API_URL}`);
+console.error(
   `[LOCAL-GIT-MCP] GITHUB_TOKEN: ${GITHUB_TOKEN ? "***" : "undefined"}`,
 );
 
@@ -38,14 +38,14 @@ const server = new McpServer({
 // Helper function to run git commands
 function runGitCommand(command: string): string {
   try {
-    console.log(`[LOCAL-GIT-MCP] Running git command: ${command}`);
-    console.log(`[LOCAL-GIT-MCP] Working directory: ${REPO_DIR}`);
+    console.error(`[LOCAL-GIT-MCP] Running git command: ${command}`);
+    console.error(`[LOCAL-GIT-MCP] Working directory: ${REPO_DIR}`);
     const result = execSync(command, {
       cwd: REPO_DIR,
       encoding: "utf8",
       stdio: ["inherit", "pipe", "pipe"],
     });
-    console.log(`[LOCAL-GIT-MCP] Git command result: ${result.trim()}`);
+    console.error(`[LOCAL-GIT-MCP] Git command result: ${result.trim()}`);
     return result.trim();
   } catch (error: any) {
     console.error(`[LOCAL-GIT-MCP] Git command failed: ${command}`);
@@ -64,9 +64,9 @@ function ensureGitUserConfigured(): void {
   try {
     // Check if user.email is already configured
     runGitCommand("git config user.email");
-    console.log(`[LOCAL-GIT-MCP] Git user.email already configured`);
+    console.error(`[LOCAL-GIT-MCP] Git user.email already configured`);
   } catch (error) {
-    console.log(
+    console.error(
       `[LOCAL-GIT-MCP] Git user.email not configured, setting to: ${gitEmail}`,
     );
     runGitCommand(`git config user.email "${gitEmail}"`);
@@ -75,9 +75,9 @@ function ensureGitUserConfigured(): void {
   try {
     // Check if user.name is already configured
     runGitCommand("git config user.name");
-    console.log(`[LOCAL-GIT-MCP] Git user.name already configured`);
+    console.error(`[LOCAL-GIT-MCP] Git user.name already configured`);
   } catch (error) {
-    console.log(
+    console.error(
       `[LOCAL-GIT-MCP] Git user.name not configured, setting to: ${gitName}`,
     );
     runGitCommand(`git config user.name "${gitName}"`);
@@ -155,7 +155,7 @@ server.tool(
         runGitCommand(`git rev-parse --verify ${branch_name}`);
         branchExists = true;
       } catch (error) {
-        console.log(
+        console.error(
           `[LOCAL-GIT-MCP] Branch ${branch_name} doesn't exist locally`,
         );
       }
@@ -163,13 +163,13 @@ server.tool(
       // If branch doesn't exist locally, try to fetch from remote
       if (!branchExists && fetch_remote) {
         try {
-          console.log(
+          console.error(
             `[LOCAL-GIT-MCP] Attempting to fetch ${branch_name} from remote`,
           );
           runGitCommand(`git fetch origin ${branch_name}:${branch_name}`);
           branchExists = true;
         } catch (error) {
-          console.log(
+          console.error(
             `[LOCAL-GIT-MCP] Branch ${branch_name} doesn't exist on remote`,
           );
         }
@@ -177,7 +177,7 @@ server.tool(
 
       // If branch still doesn't exist and create_if_missing is true, create it
       if (!branchExists && create_if_missing) {
-        console.log(`[LOCAL-GIT-MCP] Creating new branch ${branch_name}`);
+        console.error(`[LOCAL-GIT-MCP] Creating new branch ${branch_name}`);
         runGitCommand(`git checkout -b ${branch_name}`);
         return {
           content: [
@@ -237,7 +237,7 @@ server.tool(
     message: z.string().describe("Commit message"),
   },
   async ({ files, message }) => {
-    console.log(
+    console.error(
       `[LOCAL-GIT-MCP] commit_files called with files: ${JSON.stringify(files)}, message: ${message}`,
     );
     try {
@@ -245,18 +245,18 @@ server.tool(
       ensureGitUserConfigured();
 
       // Add the specified files
-      console.log(`[LOCAL-GIT-MCP] Adding ${files.length} files to git...`);
+      console.error(`[LOCAL-GIT-MCP] Adding ${files.length} files to git...`);
       for (const file of files) {
         const filePath = file.startsWith("/") ? file.slice(1) : file;
-        console.log(`[LOCAL-GIT-MCP] Adding file: ${filePath}`);
+        console.error(`[LOCAL-GIT-MCP] Adding file: ${filePath}`);
         runGitCommand(`git add "${filePath}"`);
       }
 
       // Commit the changes
-      console.log(`[LOCAL-GIT-MCP] Committing with message: ${message}`);
+      console.error(`[LOCAL-GIT-MCP] Committing with message: ${message}`);
       runGitCommand(`git commit -m "${message}"`);
 
-      console.log(
+      console.error(
         `[LOCAL-GIT-MCP] Successfully committed ${files.length} files`,
       );
       return {
@@ -454,13 +454,13 @@ server.tool(
 
 // Get git status tool
 server.tool("git_status", "Get the current git status", {}, async () => {
-  console.log(`[LOCAL-GIT-MCP] git_status called`);
+  console.error(`[LOCAL-GIT-MCP] git_status called`);
   try {
     const status = runGitCommand("git status --porcelain");
     const currentBranch = runGitCommand("git rev-parse --abbrev-ref HEAD");
 
-    console.log(`[LOCAL-GIT-MCP] Current branch: ${currentBranch}`);
-    console.log(
+    console.error(`[LOCAL-GIT-MCP] Current branch: ${currentBranch}`);
+    console.error(
       `[LOCAL-GIT-MCP] Git status: ${status || "Working tree clean"}`,
     );
 
@@ -489,18 +489,18 @@ server.tool("git_status", "Get the current git status", {}, async () => {
 });
 
 async function runServer() {
-  console.log(`[LOCAL-GIT-MCP] Starting MCP server transport...`);
+  console.error(`[LOCAL-GIT-MCP] Starting MCP server transport...`);
   const transport = new StdioServerTransport();
-  console.log(`[LOCAL-GIT-MCP] Connecting to transport...`);
+  console.error(`[LOCAL-GIT-MCP] Connecting to transport...`);
   await server.connect(transport);
-  console.log(`[LOCAL-GIT-MCP] MCP server connected and ready!`);
+  console.error(`[LOCAL-GIT-MCP] MCP server connected and ready!`);
   process.on("exit", () => {
-    console.log(`[LOCAL-GIT-MCP] Server shutting down...`);
+    console.error(`[LOCAL-GIT-MCP] Server shutting down...`);
     server.close();
   });
 }
 
-console.log(`[LOCAL-GIT-MCP] Calling runServer()...`);
+console.error(`[LOCAL-GIT-MCP] Calling runServer()...`);
 runServer().catch((error) => {
   console.error(`[LOCAL-GIT-MCP] Server startup failed:`, error);
   process.exit(1);
